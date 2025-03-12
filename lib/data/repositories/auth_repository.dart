@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthRepository extends BaseRepository {
   Stream<User?> get authStateChanges => auth.authStateChanges();
 
+  CollectionReference get _usersCollection => db.collection("Users");
+
   Future<UserModel> signUp({
     required String username,
     required String email,
@@ -74,7 +76,7 @@ class AuthRepository extends BaseRepository {
 
   Future<void> saveUser(UserModel userModel) async {
     try {
-      await db.collection("Users").doc(userModel.uid).set(userModel.toMap());
+      await _usersCollection.doc(userModel.uid).set(userModel.toMap());
     } catch (e) {
       throw "Failed to save user data in Firestore";
     }
@@ -82,7 +84,7 @@ class AuthRepository extends BaseRepository {
 
   Future<UserModel> getUserData(String uid) async {
     try {
-      DocumentSnapshot doc = await db.collection("Users").doc(uid).get();
+      DocumentSnapshot doc = await _usersCollection.doc(uid).get();
       if (!doc.exists) {
         throw "User data not found";
       }
@@ -102,10 +104,11 @@ class AuthRepository extends BaseRepository {
 
   Future<bool> checkIfEmailExists({required String email}) async {
     try {
-      final methods = await auth.fetchSignInMethodsForEmail(email);
-      return methods.isNotEmpty;
+      final querySnapshot =
+          await _usersCollection.where("email", isEqualTo: email).get();
+      return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      print("Failed to check email");
+      log("Failed to check email");
       return false;
     }
   }
@@ -113,13 +116,12 @@ class AuthRepository extends BaseRepository {
   Future<bool> checkIfPhoneExists({required String phoneNumber}) async {
     try {
       final querySnapshot =
-          await db
-              .collection("Users")
+          await _usersCollection
               .where("phoneNumber", isEqualTo: phoneNumber)
               .get();
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      print("Failed to check Phone Number");
+      log("Failed to check Phone Number");
       return false;
     }
   }
@@ -127,13 +129,10 @@ class AuthRepository extends BaseRepository {
   Future<bool> checkIfUserNameExists({required String userName}) async {
     try {
       final querySnapshot =
-          await db
-              .collection("Users")
-              .where("username", isEqualTo: userName)
-              .get();
+          await _usersCollection.where("username", isEqualTo: userName).get();
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      print("Failed to check userName");
+      log("Failed to check userName");
       return false;
     }
   }
