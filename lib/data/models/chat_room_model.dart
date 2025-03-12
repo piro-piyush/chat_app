@@ -12,27 +12,25 @@ class ChatRoomModel {
   final String? typingUserId;
   final bool isCallActive;
 
-  ChatRoomModel(
-      {required this.id,
-        required this.participants,
-        this.lastMessage,
-        this.lastMessageSenderId,
-        this.lastMessageTime,
-        Map<String, Timestamp>? lastReadTime,
-        Map<String, String>? participantsName,
-        this.isTyping = false,
-        this.typingUserId,
-        this.isCallActive = false})
-      : lastReadTime = lastReadTime ?? {},
-        participantsName = participantsName ?? {};
+  ChatRoomModel({
+    required this.id,
+    required this.participants,
+    this.lastMessage,
+    this.lastMessageSenderId,
+    this.lastMessageTime,
+    Map<String, Timestamp>? lastReadTime,
+    Map<String, String>? participantsName,
+    this.isTyping = false,
+    this.typingUserId,
+    this.isCallActive = false,
+  }) : lastReadTime = lastReadTime ?? {},
+       participantsName = participantsName ?? {};
 
   factory ChatRoomModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return ChatRoomModel(
       id: doc.id,
-      participants: List<String>.from(
-        data['participants'],
-      ),
+      participants: List<String>.from(data['participants']),
       lastMessage: data['lastMessage'],
       lastMessageSenderId: data['lastMessageSenderId'],
       lastMessageTime: data['lastMessageTime'],
